@@ -1,0 +1,1 @@
+rmarkdown::render(input = "cache.Rmd", output_format = "all")
