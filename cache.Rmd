@@ -1,0 +1,39 @@
+---
+title: "Caching in R Markdown"
+output:
+  html_notebook: default
+  html_document: default
+---
+
+# Intro
+
+Caching / Cache Invalidation can help speed up data analysis. When you run a chunk of code that takes a long time to run, the results (e.g. variables) can be cached to your local machine. The next time your program encounters that same chunk of code, the results from the previous run can be loaded, without actually running the time consuming code chunk. Pretty cool right?
+
+Cache Invalidation is the concept of not accepting the cache because things (e.g code, variables) have changed. Depending on the program/environment (e.g. knitr / R Markdown, Jupyter, etc.) will depend on how a cache is invalidated. This document will experiment with different use cases of caching, and how cache invalidation occurs in \{`knitr`\}/\{`rmarkdown`\}.
+
+# Resources
+
+- https://yihui.org/en/2018/06/cache-invalidation/
+- https://yihui.org/knitr/options/#cache 
+
+# Code Chunks in R Markdown
+
+Within an R Markdown document, `.Rmd` file ending, code chunks can are written using using the below syntax. Chunk options are comma separated written in the form `tag=value` like this:
+
+````  md
+`r ''````{r chunk-name, render=FALSE}
+# add your R / engine specified code here
+```
+````
+
+Thus, we can specify Knitr [Cache Options](https://yihui.org/knitr/options/#cache) within each code chunk.
+
+
+# Examples
+
+knitr 
+
+Code chunks can be cached using the 
+
+
+
