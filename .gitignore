@@ -15,3 +15,5 @@ CONTRIBUTING.html
 /data
 # Vim
 *.swp
+# OS
+.DS_Store

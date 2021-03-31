@@ -1,1 +1,1 @@
-rmarkdown::render(input = "cache.Rmd", output_format = "all")
+rmarkdown::render(input = "cache.Rmd", output_dir = "docs", output_format = "all")
