@@ -97,12 +97,7 @@ See [Cache large objects](https://bookdown.org/yihui/rmarkdown-cookbook/cache-la
 
 For our example, we download & use a [sample SQLite database](https://cdn.sqlitetutorial.net/wp-content/uploads/2018/03/chinook.zip) from [this tutorial](https://www.sqlitetutorial.net/sqlite-sample-database/).
 
-```` md
-`r ''````{asis}
-```
-````
-
-Connect to database. You can do this in your setup chunk. For caching purposes, we need to set the knitr option `connection=con` globally because setting it within the code chunk directly can invalidate the cache (the object contains unique values that differ when the `.Rmd` document renders). 
+Next, connect to database. You can do this in your setup chunk. For caching purposes, we need to set the knitr option `connection=con` globally because setting it within the code chunk directly can invalidate the cache (the object contains unique values that differ when the `.Rmd` document renders). 
 
 ```` md
 `r ''````{r, echo=FALSE}

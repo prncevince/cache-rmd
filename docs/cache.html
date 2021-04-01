@@ -2893,9 +2893,7 @@ opts_cache</code></pre>
 <div id="example" class="section level3">
 <h3>Example</h3>
 <p>For our example, we download &amp; use a <a href="https://cdn.sqlitetutorial.net/wp-content/uploads/2018/03/chinook.zip">sample SQLite database</a> from <a href="https://www.sqlitetutorial.net/sqlite-sample-database/">this tutorial</a>.</p>
-<pre class="md"><code>```{asis}
-```</code></pre>
-<p>Connect to database. You can do this in your setup chunk. For caching purposes, we need to set the knitr option <code>connection=con</code> globally because setting it within the code chunk directly can invalidate the cache (the object contains unique values that differ when the <code>.Rmd</code> document renders).</p>
+<p>Next, connect to database. You can do this in your setup chunk. For caching purposes, we need to set the knitr option <code>connection=con</code> globally because setting it within the code chunk directly can invalidate the cache (the object contains unique values that differ when the <code>.Rmd</code> document renders).</p>
 <pre class="md"><code>```{r, echo=FALSE}
 library(DBI)
 library(knitr)
@@ -2928,7 +2926,7 @@ message(&quot;Chunk Execution time: &quot;, t_chunk)
 tail(d_q)
 ```</code></pre>
 <pre><code>## Query Execution time: 3.09864497184753</code></pre>
-<pre><code>## Chunk Execution time: 0.0297179222106934</code></pre>
+<pre><code>## Chunk Execution time: 0.0274159908294678</code></pre>
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
 {"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["TrackId"],"name":[1],"type":["int"],"align":["right"]},{"label":["Name"],"name":[2],"type":["chr"],"align":["left"]},{"label":["AlbumId"],"name":[3],"type":["int"],"align":["right"]},{"label":["MediaTypeId"],"name":[4],"type":["int"],"align":["right"]},{"label":["GenreId"],"name":[5],"type":["int"],"align":["right"]},{"label":["Composer"],"name":[6],"type":["chr"],"align":["left"]},{"label":["Milliseconds"],"name":[7],"type":["int"],"align":["right"]},{"label":["Bytes"],"name":[8],"type":["int"],"align":["right"]},{"label":["UnitPrice"],"name":[9],"type":["dbl"],"align":["right"]}],"data":[{"1":"3498","2":"Concerto for Violin, Strings and Continuo in G Major, Op. 3, No. 9: I. Allegro","3":"342","4":"4","5":"24","6":"Pietro Antonio Locatelli","7":"493573","8":"16454937","9":"0.99","_rn_":"3498"},{"1":"3499","2":"Pini Di Roma (Pinien Von Rom) \\\\ I Pini Della Via Appia","3":"343","4":"2","5":"24","6":"NA","7":"286741","8":"4718950","9":"0.99","_rn_":"3499"},{"1":"3500","2":"String Quartet No. 12 in C Minor, D. 703 \"Quartettsatz\": II. Andante - Allegro assai","3":"344","4":"2","5":"24","6":"Franz Schubert","7":"139200","8":"2283131","9":"0.99","_rn_":"3500"},{"1":"3501","2":"L'orfeo, Act 3, Sinfonia (Orchestra)","3":"345","4":"2","5":"24","6":"Claudio Monteverdi","7":"66639","8":"1189062","9":"0.99","_rn_":"3501"},{"1":"3502","2":"Quintet for Horn, Violin, 2 Violas, and Cello in E Flat Major, K. 407/386c: III. Allegro","3":"346","4":"2","5":"24","6":"Wolfgang Amadeus Mozart","7":"221331","8":"3665114","9":"0.99","_rn_":"3502"},{"1":"3503","2":"Koyaanisqatsi","3":"347","4":"2","5":"10","6":"Philip Glass","7":"206005","8":"3305164","9":"0.99","_rn_":"3503"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
