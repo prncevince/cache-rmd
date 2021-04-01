@@ -1,24 +1,49 @@
 ---
 title: "Caching in R Markdown"
 output:
-  html_notebook: default
-  html_document: default
+  html_notebook:
+    toc: true
+    toc_float: true
+    anchor_sections: true
+  html_document:
+    toc: true
+    toc_float: true
+    anchor_sections: true
+    df_print: "paged"
+params:
+  rebuild:
+    value: FALSE
 ---
+
+```{asis notes, echo=FALSE}
+```
+
+```{r setup, echo=FALSE}
+```
+
+
+# Forward
+
+This document can be useful to you if you "render" R Markdown documents.
+
+e.g. you click the "knit" button in RStudio when within a `.Rmd` file, or run `rmarkdown::render(...)`. knitr does **not** cache within interactive R sessions. And yea, this would be a nice feature. If you're interested in interactive R session caching, you may need to look deeper.
 
 # Intro
 
-Caching / Cache Invalidation can help speed up data analysis. When you run a chunk of code that takes a long time to run, the results (e.g. variables) can be cached to your local machine. The next time your program encounters that same chunk of code, the results from the previous run can be loaded, without actually running the time consuming code chunk. Pretty cool right?
+Caching / Cache Invalidation can help speed up data analysis. When you run a chunk of code that takes a long time to run, the results (e.g. variables/objects, and output) can be cached to your local machine. The next time your program encounters that same chunk of code, the results from the previous run can be loaded without actually running the time consuming code chunk. Pretty cool right?
 
 Cache Invalidation is the concept of not accepting the cache because things (e.g code, variables) have changed. Depending on the program/environment (e.g. knitr / R Markdown, Jupyter, etc.) will depend on how a cache is invalidated. This document will experiment with different use cases of caching, and how cache invalidation occurs in \{`knitr`\}/\{`rmarkdown`\}.
 
 # Resources
 
+- https://bookdown.org/yihui/rmarkdown-cookbook/cache.html
 - https://yihui.org/en/2018/06/cache-invalidation/
 - https://yihui.org/knitr/options/#cache 
+- https://yihui.org/knitr/demo/cache/
 
 # Code Chunks in R Markdown
 
-Within an R Markdown document, `.Rmd` file ending, code chunks can are written using using the below syntax. Chunk options are comma separated written in the form `tag=value` like this:
+Within an R Markdown document, `.Rmd` file ending, code chunks are written using the below syntax. Chunk options are comma separated written in the form `tag=value` like this:
 
 ````  md
 `r ''````{r chunk-name, render=FALSE}
@@ -26,14 +51,167 @@ Within an R Markdown document, `.Rmd` file ending, code chunks can are written u
 ```
 ````
 
-Thus, we can specify Knitr [Cache Options](https://yihui.org/knitr/options/#cache) within each code chunk.
+Thus, we can specify knitr [Cache Options](https://yihui.org/knitr/options/#cache) within each code chunk.
+
+# knitr Cache Options
+
+Here are the default [cache options](https://yihui.org/knitr/options/#cache).
+
+```{r}
+opts <- knitr::opts_chunk$get()
+
+opts_cache <- list()
+
+for (i in names(opts)) {
+  if (grepl("cache", i) | grepl("dep", i)) opts_cache <- c(opts_cache, opts[i])
+}
+
+opts_cache
+```
+
+# Use Cases
+
+Here, we will run through various use cases for using caching within R Markdown. This isn't exhaustive. For all things cache, see the [Resources section](#resources).
+
+## The Long Query
+
+Here, we will simulate a long running query. It can be useful to understand in our analysis if the query takes a long time to run b/c we may be interested in tweaking it to expand and/or hone in our analysis.
+
+We can do a few things here to get back meaningful results:
+
+- time the query
+- cache the query time
+- time the execution of the code chunk
+- cache the code chunk
+
+This 4 stepped approach can allow us to understand:
+
+- how long it takes to run the query
+- how long it takes to load the cached results 
+
+Depending on how large of an object (dataframe) is returned can affect how long it takes to execute a cached code chunk (e.g. `cache=TRUE`) **if** `cache.lazy=FALSE`. By default, `cache.lazy=TRUE`. If your object is too large, you'll need to set `cache.lazy=FALSE`.
+
+See [Cache large objects](https://bookdown.org/yihui/rmarkdown-cookbook/cache-lazy.html) in the [R Markdown Cookbook](https://bookdown.org/yihui/rmarkdown-cookbook/).
+
+### Example 
+
+For our example, we download & use a [sample SQLite database](https://cdn.sqlitetutorial.net/wp-content/uploads/2018/03/chinook.zip) from [this tutorial](https://www.sqlitetutorial.net/sqlite-sample-database/).
+
+```` md
+`r ''````{asis}
+```
+````
+
+Connect to database. You can do this in your setup chunk. For caching purposes, we need to set the knitr option `connection=con` globally because setting it within the code chunk directly can invalidate the cache (the object contains unique values that differ when the `.Rmd` document renders). 
+
+```` md
+`r ''````{r, echo=FALSE}
+library(DBI)
+library(knitr)
+con <- dbConnect(RSQLite::SQLite(), dbname = "data/chinook.db")
+opts_chunk$set(connection = "db")
+```
+````
+```{r, echo=FALSE}
+library(DBI)
+library(knitr)
+con <- dbConnect(RSQLite::SQLite(), dbname = "data/chinook.db")
+opts_chunk$set(connection = "con")
+```
+
+Get the start time. No need to cache it. If one of our time calculation chunks uses caching, it will **NOT** use this value, and will use the previously calculated `t1` value instead. 
+
+```` md
+`r ''````{r t1}
+t1 <- Sys.time()
+```
+````
+```{r t1, echo=FALSE}
+t1 <- Sys.time()
+```
+
+Run query & cache code chunk. Set `cache.lazy=FALSE` to simulate a large returned object. Output object to variable. Set chunk name to anything, in this case, "long-query", so that it can be referenced for cache invalidation by our `t*_cache` variable chunks.
+
+```` md
+`r ''````{sql long-query, connection=con, output.var="d_q", cache=TRUE, cache.lazy=FALSE, cache.rebuild=params$rebuild}
+SELECT * FROM tracks
+```
+````
+```{sql long-query, output.var="d_q", cache=TRUE, cache.lazy=FALSE, cache.rebuild=params$rebuild, echo=FALSE}
+SELECT * FROM tracks
+```
+
+Gather cached query end time. Calculate total and cache. Set `dependson="long-query"` so that if our query changes, this time gets recomputed. Since our sample database is small, we'll add a `Sys.sleep()` call to simulate a long data pull. 
+
+```` md
+`r ''````{r t2-cache, cache=TRUE, dependson="long-query"}
+Sys.sleep(3)
+t2_cache <- Sys.time()
+t_cache <- t2_cache - t1
+```
+````
+```{r t2-cache, cache=TRUE, dependson="long-query", echo=FALSE}
+Sys.sleep(3)
+t2_cache <- Sys.time()
+t_cache <- t2_cache - t1
+```
+
+Gather code chunk end time. Calculate total.
+
+```` md
+`r ''````{r t2-chunk}
+t2_chunk <- Sys.time()
+t_chunk <- t2_chunk - t1
+```
+````
+```{r t2-chunk, echo=FALSE}
+t2_chunk <- Sys.time()
+t_chunk <- t2_chunk - t1
+```
+
+View the results!
+
+```` md
+`r ''````{r}
+message("Query Execution time: ", t_cache)
+message("Chunk Execution time: ", t_chunk)
+tail(d_q)
+```
+````
+```{r, echo=FALSE}
+message("Query Execution time: ", t_cache)
+message("Chunk Execution time: ", t_chunk)
+tail(d_q)
+```
 
 
-# Examples
+## The Rerun (rebuild)
 
-knitr 
+Sometimes, you may want to conditionally "rebuild" your cache. You could have a few reasons for doing this. 
 
-Code chunks can be cached using the 
+One use case may be that the code chunk's dependency that you are using (e.g. remote data source like S3, a database, etc.) has changed, but you don't have a way of automatically specifying this change programmatically within your code chunk. 
 
+Another may be that the cached chunk depends on the existence of a file.
+
+The option `cache.rebuild` can handle this use case. In our previous example, we added this to our "long-query" chunk. `include` and `cache.rebuild` are the only chunk options that will not invalidate the cache strictly by a change in value from the previous knit. If `cache.rebuild` is set to `TRUE`, then it will rebuild the cache. If it is set back to `FALSE`, then it will **NOT** rebuild the cache (if it was previously built).
+
+Within our "long-query" chunk, we set `cache.rebuild=params$rebuild` using an [R Markdown parameter](https://bookdown.org/yihui/rmarkdown/parameterized-reports.html). We set this to `FALSE` by default so that the rules of knitr cache invalidation can work their magic. We do this by adding it to our R Markdown's YAML header. e.g.:
+
+```yaml
+title: "You're Cool Document"
+output:
+  html_document: default
+params:
+  rebuild:
+    value: FALSE
+```
+
+When rendering our document, if we want to manually rerun the SQL query due to the previously mentioned reasons, then we can spcify this in our render statement by overriding our yaml header default value via setting  `params$rebuild` to `TRUE`. e.g.:
+
+```r
+rmarkdown::render(..., params = list(rebuild = TRUE))
+```
+
+## The Changing Flat File
 
 

@@ -12,7 +12,9 @@ CONTRIBUTING.html
 # A personal note directory - add your notes in here
 /notes
 # For the data
-/data
+# removing for sqlite database
+/data/*
+!/data/chinook.db
 # Vim
 *.swp
 # OS
