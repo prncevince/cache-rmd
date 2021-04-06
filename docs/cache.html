@@ -1271,6 +1271,66 @@ window.buildTabsets = function(tocID) {
 };
 
 </script>
+<script>
+window.initializeCodeFolding = function(show) {
+
+  // handlers for show-all and hide all
+  $("#rmd-show-all-code").click(function() {
+    $('div.r-code-collapse').each(function() {
+      $(this).collapse('show');
+    });
+  });
+  $("#rmd-hide-all-code").click(function() {
+    $('div.r-code-collapse').each(function() {
+      $(this).collapse('hide');
+    });
+  });
+
+  // index for unique code element ids
+  var currentIndex = 1;
+
+  // select all R code blocks
+  var rCodeBlocks = $('pre.r, pre.python, pre.bash, pre.sql, pre.cpp, pre.stan, pre.julia, pre.foldable');
+  rCodeBlocks.each(function() {
+
+    // create a collapsable div to wrap the code in
+    var div = $('<div class="collapse r-code-collapse"></div>');
+    var showThis = (show || $(this).hasClass('fold-show')) && !$(this).hasClass('fold-hide');
+    if (showThis) div.collapse('show');
+    var id = 'rcode-643E0F36' + currentIndex++;
+    div.attr('id', id);
+    $(this).before(div);
+    $(this).detach().appendTo(div);
+
+    // add a show code button right above
+    var showCodeText = $('<span>' + (showThis ? 'Hide' : 'Code') + '</span>');
+    var showCodeButton = $('<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm code-folding-btn pull-right float-right"></button>');
+    showCodeButton.append(showCodeText);
+    showCodeButton
+        .attr('data-toggle', 'collapse')
+        .attr('data-target', '#' + id)
+        .attr('aria-expanded', showThis)
+        .attr('aria-controls', id);
+
+    var buttonRow = $('<div class="row"></div>');
+    var buttonCol = $('<div class="col-md-12"></div>');
+
+    buttonCol.append(showCodeButton);
+    buttonRow.append(buttonCol);
+
+    div.before(buttonRow);
+
+    // update state of button on show/hide
+    div.on('hidden.bs.collapse', function () {
+      showCodeText.text('Code');
+    });
+    div.on('show.bs.collapse', function () {
+      showCodeText.text('Hide');
+    });
+  });
+
+}
+</script>
 <style type="text/css">.hljs-literal {
 color: #990073;
 }
@@ -2714,6 +2774,9 @@ pre code {
 </style>
 
 <!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
 
 
 
@@ -2776,6 +2839,12 @@ div.tocify {
   border-radius: 0px;
 }
 
+.tocify-subheader {
+  display: inline;
+}
+.tocify-subheader .tocify-item {
+  font-size: 0.95em;
+}
 
 </style>
 
@@ -2800,8 +2869,22 @@ div.tocify {
 
 
 
+<script>
+$("div.row > .col-sm-12.col-md-4.col-lg-3")
+    .attr('class', "col-xs-12 col-sm-4 col-md-3")
+$("div.row > .toc-content.col-sm-12.col-md-8.col-lg-9")
+    .attr('class', "toc-content col-xs-12 col-sm-8 col-md-9")
+</script>
 
 <div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
 
 
 
@@ -2898,7 +2981,7 @@ opts_cache</code></pre>
 library(DBI)
 library(knitr)
 con &lt;- dbConnect(RSQLite::SQLite(), dbname = &quot;data/chinook.db&quot;)
-opts_chunk$set(connection = &quot;db&quot;)
+opts_chunk$set(connection = &quot;con&quot;)
 ```</code></pre>
 <p>Get the start time. No need to cache it. If one of our time calculation chunks uses caching, it will <strong>NOT</strong> use this value, and will use the previously calculated <code>t1</code> value instead.</p>
 <pre class="md"><code>```{r t1}
@@ -2925,8 +3008,8 @@ message(&quot;Query Execution time: &quot;, t_cache)
 message(&quot;Chunk Execution time: &quot;, t_chunk)
 tail(d_q)
 ```</code></pre>
-<pre><code>## Query Execution time: 3.09864497184753</code></pre>
-<pre><code>## Chunk Execution time: 0.0274159908294678</code></pre>
+<pre><code>## Query Execution time: 3.12674808502197</code></pre>
+<pre><code>## Chunk Execution time: 0.0907759666442871</code></pre>
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
 {"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["TrackId"],"name":[1],"type":["int"],"align":["right"]},{"label":["Name"],"name":[2],"type":["chr"],"align":["left"]},{"label":["AlbumId"],"name":[3],"type":["int"],"align":["right"]},{"label":["MediaTypeId"],"name":[4],"type":["int"],"align":["right"]},{"label":["GenreId"],"name":[5],"type":["int"],"align":["right"]},{"label":["Composer"],"name":[6],"type":["chr"],"align":["left"]},{"label":["Milliseconds"],"name":[7],"type":["int"],"align":["right"]},{"label":["Bytes"],"name":[8],"type":["int"],"align":["right"]},{"label":["UnitPrice"],"name":[9],"type":["dbl"],"align":["right"]}],"data":[{"1":"3498","2":"Concerto for Violin, Strings and Continuo in G Major, Op. 3, No. 9: I. Allegro","3":"342","4":"4","5":"24","6":"Pietro Antonio Locatelli","7":"493573","8":"16454937","9":"0.99","_rn_":"3498"},{"1":"3499","2":"Pini Di Roma (Pinien Von Rom) \\\\ I Pini Della Via Appia","3":"343","4":"2","5":"24","6":"NA","7":"286741","8":"4718950","9":"0.99","_rn_":"3499"},{"1":"3500","2":"String Quartet No. 12 in C Minor, D. 703 \"Quartettsatz\": II. Andante - Allegro assai","3":"344","4":"2","5":"24","6":"Franz Schubert","7":"139200","8":"2283131","9":"0.99","_rn_":"3500"},{"1":"3501","2":"L'orfeo, Act 3, Sinfonia (Orchestra)","3":"345","4":"2","5":"24","6":"Claudio Monteverdi","7":"66639","8":"1189062","9":"0.99","_rn_":"3501"},{"1":"3502","2":"Quintet for Horn, Violin, 2 Violas, and Cello in E Flat Major, K. 407/386c: III. Allegro","3":"346","4":"2","5":"24","6":"Wolfgang Amadeus Mozart","7":"221331","8":"3665114","9":"0.99","_rn_":"3502"},{"1":"3503","2":"Koyaanisqatsi","3":"347","4":"2","5":"10","6":"Philip Glass","7":"206005","8":"3305164","9":"0.99","_rn_":"3503"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
@@ -2990,6 +3073,11 @@ $(document).ready(function () {
 </script>
 
 <!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("show" === "show");
+});
+</script>
 
 <script>
 $(document).ready(function ()  {
@@ -3001,7 +3089,7 @@ $(document).ready(function ()  {
 
     // establish options
     var options = {
-      selectors: "h1,h2,h3",
+      selectors: "h1,h2,h3,h4,h5",
       theme: "bootstrap3",
       context: '.toc-content',
       hashGenerator: function (text) {
@@ -3010,7 +3098,7 @@ $(document).ready(function ()  {
       ignoreSelector: ".toc-ignore",
       scrollTo: 0
     };
-    options.showAndHide = true;
+    options.showAndHide = false;
     options.smoothScroll = true;
 
     // tocify

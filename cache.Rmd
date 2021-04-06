@@ -2,14 +2,25 @@
 title: "Caching in R Markdown"
 output:
   html_notebook:
-    toc: true
-    toc_float: true
     anchor_sections: true
+    includes:
+      before_body:
+        style.html
+    toc: true
+    toc_depth: 5
+    toc_float:
+      collapsed: false 
   html_document:
-    toc: true
-    toc_float: true
     anchor_sections: true
+    code_folding: "show"
     df_print: "paged"
+    includes:
+      before_body:
+        style.html
+    toc: true
+    toc_depth: 5
+    toc_float:
+      collapsed: false
 params:
   rebuild:
     value: FALSE
@@ -104,7 +115,7 @@ Next, connect to database. You can do this in your setup chunk. For caching purp
 library(DBI)
 library(knitr)
 con <- dbConnect(RSQLite::SQLite(), dbname = "data/chinook.db")
-opts_chunk$set(connection = "db")
+opts_chunk$set(connection = "con")
 ```
 ````
 ```{r, echo=FALSE}
